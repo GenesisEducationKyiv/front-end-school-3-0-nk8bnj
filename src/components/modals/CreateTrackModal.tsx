@@ -20,7 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { X, Plus } from "lucide-react";
 import useTracksStore from "@/store/useTracksStore";
-import { TrackFormData } from "@/types";
+import { TrackFormData } from "@/types/schemas";
 
 const initialFormData: TrackFormData = {
   title: "",
@@ -123,7 +123,7 @@ const CreateTrackModal = () => {
         </DialogHeader>
 
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(e) => void handleSubmit(e)}
           className="space-y-4 mt-4"
           data-testid="track-form"
         >

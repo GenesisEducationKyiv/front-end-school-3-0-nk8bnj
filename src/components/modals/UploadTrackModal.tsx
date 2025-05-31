@@ -147,7 +147,7 @@ const UploadTrackModal = () => {
                   <Button
                     type="button"
                     variant="destructive"
-                    onClick={handleDeleteFile}
+                    onClick={() => void handleDeleteFile()}
                     disabled={isUploading}
                     className="flex items-center"
                   >
@@ -178,7 +178,7 @@ const UploadTrackModal = () => {
                 {selectedFile && (
                   <Button
                     type="button"
-                    onClick={handleUpload}
+                    onClick={() => void handleUpload()}
                     disabled={isUploading}
                   >
                     {isUploading ? "Uploading..." : "Upload"}

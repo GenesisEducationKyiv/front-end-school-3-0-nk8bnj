@@ -38,190 +38,195 @@ const useTracksStore = create<TracksState>((set, get) => ({
     const { currentPage, itemsPerPage, sort, filter } = get();
     set({ isLoading: true });
 
-    try {
-      const response = await fetchTracks(
-        currentPage,
-        itemsPerPage,
-        sort.field as string,
-        sort.direction,
-        filter.search,
-        filter.genres.length ? filter.genres[0] : undefined,
-      );
+    const result = await fetchTracks(
+      currentPage,
+      itemsPerPage,
+      sort.field as string,
+      sort.direction,
+      filter.search,
+      filter.genres.length ? filter.genres[0] : undefined
+    );
 
+    if (result.isOk()) {
       set({
-        tracks: response.data,
-        totalTracks: response.meta.total,
-        totalPages: response.meta.totalPages,
+        tracks: result.value.data,
+        totalTracks: result.value.meta.total,
+        totalPages: result.value.meta.totalPages,
         isLoading: false,
       });
-    } catch (error) {
+    } else {
       set({ isLoading: false });
-      console.error("Failed to fetch tracks:", error);
+      console.error("Failed to fetch tracks:", result.error);
     }
   },
 
   fetchAllGenres: async () => {
-    try {
-      const genres = await fetchGenres();
-      set({ genres });
-    } catch (error) {
-      console.error("Failed to fetch genres:", error);
+    const result = await fetchGenres();
+    if (result.isOk()) {
+      set({ genres: result.value });
+    } else {
+      console.error("Failed to fetch genres:", result.error);
+      set({ genres: [] });
     }
   },
 
-  setPage: (page) => {
+  setPage: page => {
     set({ currentPage: page });
-    get().fetchAllTracks();
+    void get().fetchAllTracks();
   },
 
-  setItemsPerPage: (limit) => {
+  setItemsPerPage: limit => {
     set({ itemsPerPage: limit, currentPage: 1 });
-    get().fetchAllTracks();
+    void get().fetchAllTracks();
   },
 
-  setSort: (sort) => {
+  setSort: sort => {
     set({ sort });
-    get().fetchAllTracks();
+    void get().fetchAllTracks();
   },
 
-  setFilter: (filter) => {
+  setFilter: filter => {
     set({ filter, currentPage: 1 });
-    get().fetchAllTracks();
+    void get().fetchAllTracks();
   },
 
-  setSearch: (search) => {
+  setSearch: search => {
     set({ filter: { ...get().filter, search }, currentPage: 1 });
-    get().fetchAllTracks();
+    void get().fetchAllTracks();
   },
 
-  createNewTrack: async (data) => {
+  createNewTrack: async data => {
     set({ isCreating: true });
 
-    try {
-      const newTrack = await createTrack(data);
-      set((state) => ({
-        tracks: [newTrack, ...state.tracks].slice(0, state.itemsPerPage),
+    const result = await createTrack(data);
+
+    if (result.isOk()) {
+      set(state => ({
+        tracks: [result.value, ...state.tracks].slice(0, state.itemsPerPage),
         isCreating: false,
         createModalOpen: false,
       }));
 
-      get().fetchAllTracks();
-      return newTrack;
-    } catch (error) {
+      void get().fetchAllTracks();
+      return result.value;
+    } else {
       set({ isCreating: false });
-      console.error("Failed to create track:", error);
+      console.error("Failed to create track:", result.error);
     }
   },
 
-  updateSelectedTrack: async (data) => {
+  updateSelectedTrack: async data => {
     const { selectedTrack } = get();
+
     if (!selectedTrack) return;
 
     set({ isLoading: true });
+    const result = await updateTrack(selectedTrack.id, data);
 
-    try {
-      const updatedTrack = await updateTrack(selectedTrack.id, data);
-      set((state) => ({
-        tracks: state.tracks.map((track) =>
-          track.id === updatedTrack.id ? updatedTrack : track,
+    if (result.isOk()) {
+      set(state => ({
+        tracks: state.tracks.map(track =>
+          track.id === result.value.id ? result.value : track
         ),
         isLoading: false,
         editModalOpen: false,
         selectedTrack: null,
       }));
 
-      return updatedTrack;
-    } catch (error) {
+      return result.value;
+    } else {
       set({ isLoading: false });
-      console.error("Failed to update track:", error);
+      console.error("Failed to update track:", result.error);
     }
   },
 
   deleteSelectedTrack: async () => {
     const { selectedTrack } = get();
+
     if (!selectedTrack) return;
 
     set({ isDeleting: true });
+    const result = await deleteTrack(selectedTrack.id);
 
-    try {
-      await deleteTrack(selectedTrack.id);
-      set((state) => ({
-        tracks: state.tracks.filter((track) => track.id !== selectedTrack.id),
+    if (result.isOk()) {
+      set(state => ({
+        tracks: state.tracks.filter(track => track.id !== selectedTrack.id),
         isDeleting: false,
         deleteModalOpen: false,
         selectedTrack: null,
       }));
-    } catch (error) {
+    } else {
       set({ isDeleting: false });
-      console.error("Failed to delete track:", error);
+      console.error("Failed to delete track:", result.error);
     }
   },
 
-  uploadFile: async (file) => {
+  uploadFile: async file => {
     const { selectedTrack } = get();
+
     if (!selectedTrack) return;
 
     set({ isUploading: true });
+    const result = await uploadTrackFile(selectedTrack.id, file);
 
-    try {
-      const updatedTrack = await uploadTrackFile(selectedTrack.id, file);
-      set((state) => ({
-        tracks: state.tracks.map((track) =>
-          track.id === updatedTrack.id ? updatedTrack : track,
+    if (result.isOk()) {
+      set(state => ({
+        tracks: state.tracks.map(track =>
+          track.id === result.value.id ? result.value : track
         ),
         isUploading: false,
         uploadModalOpen: false,
         selectedTrack: null,
       }));
 
-      return updatedTrack;
-    } catch (error) {
+      return result.value;
+    } else {
       set({ isUploading: false });
-      console.error("Failed to upload file:", error);
-      throw error;
+      console.error("Failed to upload file:", result.error);
     }
   },
 
   deleteFile: async () => {
     const { selectedTrack } = get();
+
     if (!selectedTrack) return;
 
     set({ isUploading: true });
+    const result = await deleteTrackFile(selectedTrack.id);
 
-    try {
-      const updatedTrack = await deleteTrackFile(selectedTrack.id);
-      set((state) => ({
-        tracks: state.tracks.map((track) =>
-          track.id === updatedTrack.id ? updatedTrack : track,
+    if (result.isOk()) {
+      set(state => ({
+        tracks: state.tracks.map(track =>
+          track.id === result.value.id ? result.value : track
         ),
         isUploading: false,
-        selectedTrack: updatedTrack,
+        selectedTrack: result.value,
       }));
 
-      return updatedTrack;
-    } catch (error) {
+      return result.value;
+    } else {
       set({ isUploading: false });
-      console.error("Failed to delete file:", error);
+      console.error("Failed to delete file:", result.error);
     }
   },
 
-  toggleTrackSelection: (trackId) => {
-    set((state) => {
+  toggleTrackSelection: trackId => {
+    set(state => {
       const isSelected = state.selectedTrackIds.includes(trackId);
       return {
         selectedTrackIds: isSelected
-          ? state.selectedTrackIds.filter((id) => id !== trackId)
+          ? state.selectedTrackIds.filter(id => id !== trackId)
           : [...state.selectedTrackIds, trackId],
       };
     });
   },
 
   toggleAllTracksSelection: () => {
-    set((state) => {
+    set(state => {
       if (state.selectedTrackIds.length === state.tracks.length) {
         return { selectedTrackIds: [] };
       }
-      return { selectedTrackIds: state.tracks.map((track) => track.id) };
+      return { selectedTrackIds: state.tracks.map(track => track.id) };
     });
   },
 
@@ -234,46 +239,45 @@ const useTracksStore = create<TracksState>((set, get) => ({
     if (selectedTrackIds.length === 0) return;
 
     set({ isDeleting: true });
+    const result = await deleteTracks(selectedTrackIds);
 
-    try {
-      const result = await deleteTracks(selectedTrackIds);
-
-      set((state) => ({
+    if (result.isOk()) {
+      set(state => ({
         tracks: state.tracks.filter(
-          (track) => !result.success.includes(track.id),
+          track => !result.value.success.includes(track.id)
         ),
         selectedTrackIds: [],
         isDeleting: false,
         bulkDeleteModalOpen: false,
       }));
 
-      get().fetchAllTracks();
-    } catch (error) {
+      void get().fetchAllTracks();
+    } else {
       set({ isDeleting: false });
-      console.error("Failed to delete tracks:", error);
+      console.error("Failed to delete tracks:", result.error);
     }
   },
 
-  setSelectedTrack: (track) => set({ selectedTrack: track }),
+  setSelectedTrack: track => set({ selectedTrack: track }),
 
   openCreateModal: () => set({ createModalOpen: true }),
   closeCreateModal: () => set({ createModalOpen: false }),
 
-  openEditModal: (track) => set({ editModalOpen: true, selectedTrack: track }),
+  openEditModal: track => set({ editModalOpen: true, selectedTrack: track }),
   closeEditModal: () => set({ editModalOpen: false, selectedTrack: null }),
 
-  openDeleteModal: (track) =>
+  openDeleteModal: track =>
     set({ deleteModalOpen: true, selectedTrack: track }),
   closeDeleteModal: () => set({ deleteModalOpen: false, selectedTrack: null }),
 
-  openUploadModal: (track) =>
+  openUploadModal: track =>
     set({ uploadModalOpen: true, selectedTrack: track }),
   closeUploadModal: () => set({ uploadModalOpen: false, selectedTrack: null }),
 
   openBulkDeleteModal: () => set({ bulkDeleteModalOpen: true }),
   closeBulkDeleteModal: () => set({ bulkDeleteModalOpen: false }),
 
-  setCurrentlyPlaying: (trackId) => set({ currentlyPlaying: trackId }),
+  setCurrentlyPlaying: trackId => set({ currentlyPlaying: trackId }),
 }));
 
 export default useTracksStore;

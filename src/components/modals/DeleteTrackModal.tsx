@@ -43,7 +43,7 @@ const DeleteTrackModal = () => {
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction
-            onClick={handleDelete}
+            onClick={() => void handleDelete()}
             disabled={isDeleting}
             className="bg-slate-300 text-red-500-foreground hover:bg-red-500/90"
             data-testid="confirm-delete"
