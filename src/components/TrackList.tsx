@@ -15,7 +15,7 @@ import useTracksStore from "@/store/useTracksStore";
 import TrackCard from "./TrackCard";
 import { useDebounce } from "@/hooks/useDebounce";
 import Pagination from "./Pagination";
-import { Track } from "@/types";
+import { Track } from "@/types/schemas";
 import { Checkbox } from "./ui/checkbox";
 
 const TrackList = () => {
@@ -46,8 +46,8 @@ const TrackList = () => {
   }, [debouncedSearch, setSearch]);
 
   useEffect(() => {
-    fetchAllTracks();
-    fetchAllGenres();
+    void fetchAllTracks();
+    void fetchAllGenres();
   }, [fetchAllTracks, fetchAllGenres]);
 
   const handleSortChange = (value: string) => {

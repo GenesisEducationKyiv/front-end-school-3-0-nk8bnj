@@ -39,7 +39,7 @@ const BulkDeleteModal = () => {
           <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
           <Button
             variant="destructive"
-            onClick={handleConfirmDelete}
+            onClick={() => void handleConfirmDelete()}
             disabled={isDeleting}
           >
             {isDeleting ? (

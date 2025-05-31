@@ -1,33 +1,4 @@
-export interface Track {
-  id: string;
-  title: string;
-  artist: string;
-  album: string;
-  genres: string[];
-  slug: string;
-  coverImage: string;
-  audioFile: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface TrackFormData {
-  title: string;
-  artist: string;
-  album: string;
-  genres: string[];
-  coverImage: string;
-}
-
-export interface ApiResponse<T> {
-  data: T[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
+import { Track, TrackFormData } from "./schemas";
 
 export interface SortOption {
   field: keyof Track;
@@ -38,6 +9,12 @@ export interface FilterOptions {
   search: string;
   genres: string[];
   artist?: string;
+}
+
+export interface ApiError {
+  message: string;
+  status?: number;
+  details?: unknown;
 }
 
 export interface TracksState {
