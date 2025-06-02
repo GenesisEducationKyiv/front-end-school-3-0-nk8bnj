@@ -1,8 +1,18 @@
 import { Track, TrackFormData } from "./schemas";
 
+export type SortField = "title" | "artist" | "duration";
+export type SortDirection = "asc" | "desc";
+export type SortValue =
+  | "title-asc"
+  | "title-desc"
+  | "artist-asc"
+  | "artist-desc"
+  | "createdAt-asc"
+  | "createdAt-desc";
+
 export interface SortOption {
-  field: keyof Track;
-  direction: "asc" | "desc";
+  field: SortField;
+  direction: SortDirection;
 }
 
 export interface FilterOptions {

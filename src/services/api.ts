@@ -10,7 +10,7 @@ import {
   TrackFormData,
   ApiResponse,
 } from "@/types/schemas";
-import { ApiError } from "@/types";
+import { ApiError, SortDirection, SortField } from "@/types/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -49,15 +49,15 @@ const safeFetch = (
 export const fetchTracks = async (
   page = 1,
   limit = 8,
-  sortField?: string,
-  sortDirection?: string,
+  sortField?: SortField,
+  sortDirection?: SortDirection,
   search?: string,
   filterGenre?: string
 ): Promise<ResultAsync<ApiResponse, ApiError>> => {
   let url = `${API_URL}/tracks?page=${page}&limit=${limit}`;
 
   if (sortField && sortDirection) {
-    url += `&sort=${sortField}&direction=${sortDirection}`;
+    url += `&sort=${sortField}&order=${sortDirection}`;
   }
 
   if (search) {

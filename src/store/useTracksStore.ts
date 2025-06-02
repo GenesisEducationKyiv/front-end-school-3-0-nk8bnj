@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { TracksState } from "@/types";
+import { SortDirection, SortField, TracksState } from "@/types/types";
 import {
   fetchTracks,
   fetchGenres,
@@ -24,7 +24,7 @@ const useTracksStore = create<TracksState>((set, get) => ({
   totalTracks: 0,
   totalPages: 0,
   itemsPerPage: 8,
-  sort: { field: "title", direction: "asc" },
+  sort: { field: "title" as SortField, direction: "asc" as SortDirection },
   filter: { search: "", genres: [] },
   currentlyPlaying: null,
 
@@ -41,7 +41,7 @@ const useTracksStore = create<TracksState>((set, get) => ({
     const result = await fetchTracks(
       currentPage,
       itemsPerPage,
-      sort.field as string,
+      sort.field,
       sort.direction,
       filter.search,
       filter.genres.length ? filter.genres[0] : undefined
