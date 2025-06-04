@@ -24,7 +24,7 @@ const useTracksStore = create<TracksState>((set, get) => ({
   totalTracks: 0,
   totalPages: 0,
   itemsPerPage: 8,
-  sort: { field: "title" as SortField, direction: "asc" as SortDirection },
+  sort: { field: SortField.TITLE, direction: SortDirection.ASC },
   filter: { search: "", genres: [] },
   currentlyPlaying: null,
 

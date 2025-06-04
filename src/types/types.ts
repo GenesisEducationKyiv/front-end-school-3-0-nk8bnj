@@ -1,7 +1,16 @@
 import { Track, TrackFormData } from "./schemas";
 
-export type SortField = "title" | "artist" | "duration";
-export type SortDirection = "asc" | "desc";
+export enum SortField {
+  TITLE = "title",
+  ARTIST = "artist", 
+  DURATION = "duration"
+}
+
+export enum SortDirection {
+  ASC = "asc",
+  DESC = "desc"
+}
+
 export type SortValue =
   | "title-asc"
   | "title-desc"
