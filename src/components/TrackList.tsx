@@ -10,66 +10,123 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Music, Plus, Search, Trash2 } from "lucide-react";
+import { Music, Plus, Search, Trash2, X } from "lucide-react";
 import useTracksStore from "@/store/useTracksStore";
 import TrackCard from "./TrackCard";
 import { useDebounce } from "@/hooks/useDebounce";
 import Pagination from "./Pagination";
 import { Checkbox } from "./ui/checkbox";
 import { SortDirection, SortField, SortValue } from "@/types/types";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const TrackList = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const {
     tracks,
     genres,
     isLoading,
     currentPage,
     totalPages,
-    fetchAllTracks,
     fetchAllGenres,
     setPage,
     setSort,
-    filter,
     setFilter,
-    setSearch,
     openCreateModal,
     openBulkDeleteModal,
     selectedTrackIds,
     toggleAllTracksSelection,
   } = useTracksStore();
 
-  const [searchTerm, setSearchTerm] = useState(filter.search);
+  const initialSearch = searchParams.get("search") || "";
+
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
   const debouncedSearch = useDebounce(searchTerm, 500);
 
   useEffect(() => {
-    setSearch(debouncedSearch);
-  }, [debouncedSearch, setSearch]);
+    const currentSearch = searchParams.get("search") || "";
+    const currentGenre = searchParams.get("genre") || "all";
+    const currentSort = searchParams.get("sort") || "title-asc";
+    const currentPage = parseInt(searchParams.get("page") || "1", 10);
 
-  useEffect(() => {
-    void fetchAllTracks();
-    void fetchAllGenres();
-  }, [fetchAllTracks, fetchAllGenres]);
+    setSearchTerm(currentSearch);
 
+    setFilter({
+      search: currentSearch,
+      genres: currentGenre !== "all" ? [currentGenre] : [],
+    });
 
-  const handleSortChange = (value: SortValue) => {
-    const [field, direction] = value.split("-");
-    console.log(field, direction);
+    const [field, direction] = currentSort.split("-");
     setSort({
       field: field as SortField,
       direction: direction as SortDirection,
     });
+
+    setPage(currentPage);
+
+  }, [searchParams, setFilter, setSort, setPage]);
+
+  useEffect(() => {
+    updateQueryParams({ search: debouncedSearch });
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    void fetchAllGenres();
+  }, [fetchAllGenres]);
+
+  const updateQueryParams = (params: Record<string, string>) => {
+    const newParams = new URLSearchParams(searchParams.toString());
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value && value !== "all") {
+        newParams.set(key, value);
+      } else {
+        newParams.delete(key);
+      }
+    });
+
+    const page = newParams.get("page");
+    if (page === "1") {
+      newParams.delete("page");
+    }
+
+    const newUrl = `${window.location.pathname}${newParams.toString() ? `?${newParams.toString()}` : ""
+      }`;
+
+    router.push(newUrl);
+  };
+
+  const handleSortChange = (value: SortValue) => {
+    updateQueryParams({ sort: value, page: "1" });
   };
 
   const handleGenreChange = (value: string) => {
-    setFilter({
-      ...filter,
-      genres: value === "all" ? [] : [value],
+    updateQueryParams({ genre: value, page: "1" });
+  };
+
+  const handlePageChange = (page: number) => {
+    updateQueryParams({ page: page.toString() });
+  };
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    updateQueryParams({
+      search: "",
+      genre: "all",
+      sort: "title-asc",
+      page: "1",
     });
   };
 
   const areAllTracksSelected =
     tracks.length > 0 && selectedTrackIds.length === tracks.length;
   const areSomeTracksSelected = selectedTrackIds.length > 0;
+
+  const hasActiveFilters =
+    searchParams.has("search") ||
+    (searchParams.has("genre") && searchParams.get("genre") !== "all") ||
+    (searchParams.has("sort") && searchParams.get("sort") !== "title-asc");
 
   return (
     <div className="container max-w-7xl py-8 px-4">
@@ -88,7 +145,7 @@ const TrackList = () => {
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-8">
+      <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-4">
         <div className="relative w-full md:w-auto flex-grow">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -101,7 +158,10 @@ const TrackList = () => {
         </div>
 
         <div className="flex gap-4 w-full md:w-auto flex-wrap">
-          <Select defaultValue="title-asc" onValueChange={handleSortChange}>
+          <Select
+            value={searchParams.get("sort") || "title-asc"}
+            onValueChange={handleSortChange}
+          >
             <SelectTrigger
               className="w-full md:w-[180px]"
               data-testid="sort-select"
@@ -118,7 +178,10 @@ const TrackList = () => {
             </SelectContent>
           </Select>
 
-          <Select defaultValue="all" onValueChange={handleGenreChange}>
+          <Select
+            value={searchParams.get("genre") || "all"}
+            onValueChange={handleGenreChange}
+          >
             <SelectTrigger
               className="w-full md:w-[180px]"
               data-testid="filter-genre"
@@ -134,6 +197,18 @@ const TrackList = () => {
               ))}
             </SelectContent>
           </Select>
+
+          {hasActiveFilters && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={clearFilters}
+              className="md:w-[40px] h-10"
+              data-testid="clear-filters"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
 
@@ -153,7 +228,7 @@ const TrackList = () => {
           <Music className="h-12 w-12 mx-auto text-muted-foreground" />
           <h2 className="mt-4 text-xl font-medium">No tracks found</h2>
           <p className="mt-2 text-muted-foreground">
-            {filter.search || filter.genres.length || filter.artist
+            {searchParams.has("search") || searchParams.has("genre")
               ? "Try adjusting your search or filters"
               : "Add your first track to get started"}
           </p>
@@ -202,7 +277,7 @@ const TrackList = () => {
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
-        setPage={setPage}
+        setPage={handlePageChange}
       />
     </div>
   );
