@@ -1,4 +1,4 @@
-import { Track } from "@/types";
+import { Track } from "@/types/schemas";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -52,7 +52,7 @@ const TrackCard = ({ track }: TrackCardProps) => {
         audioElements.forEach((audio) => audio.pause());
       }
 
-      audioRef.current?.play();
+      void audioRef.current?.play();
       setIsPlaying(true);
       setCurrentlyPlaying(track.id);
     }

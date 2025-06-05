@@ -1,43 +1,39 @@
-export interface Track {
-  id: string;
-  title: string;
-  artist: string;
-  album: string;
-  genres: string[];
-  slug: string;
-  coverImage: string;
-  audioFile: string;
-  createdAt: string;
-  updatedAt: string;
+import { Track, TrackFormData } from "./schemas";
+
+export enum SortField {
+  TITLE = "title",
+  ARTIST = "artist", 
+  DURATION = "duration"
 }
 
-export interface TrackFormData {
-  title: string;
-  artist: string;
-  album: string;
-  genres: string[];
-  coverImage: string;
+export enum SortDirection {
+  ASC = "asc",
+  DESC = "desc"
 }
 
-export interface ApiResponse<T> {
-  data: T[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
+export type SortValue =
+  | "title-asc"
+  | "title-desc"
+  | "artist-asc"
+  | "artist-desc"
+  | "createdAt-asc"
+  | "createdAt-desc";
 
 export interface SortOption {
-  field: keyof Track;
-  direction: "asc" | "desc";
+  field: SortField;
+  direction: SortDirection;
 }
 
 export interface FilterOptions {
   search: string;
   genres: string[];
   artist?: string;
+}
+
+export interface ApiError {
+  message: string;
+  status?: number;
+  details?: unknown;
 }
 
 export interface TracksState {
