@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Music, Plus, Search, Trash2, X } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { O } from "@mobily/ts-belt";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,14 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Music, Plus, Search, Trash2, X } from "lucide-react";
 import useTracksStore from "@/store/useTracksStore";
 import TrackCard from "./TrackCard";
 import { useDebounce } from "@/hooks/useDebounce";
 import Pagination from "./Pagination";
 import { Checkbox } from "./ui/checkbox";
 import { SortDirection, SortField, SortValue } from "@/types/types";
-import { useRouter, useSearchParams } from "next/navigation";
 
 const TrackList = () => {
   const router = useRouter();
@@ -39,16 +41,20 @@ const TrackList = () => {
     toggleAllTracksSelection,
   } = useTracksStore();
 
-  const initialSearch = searchParams.get("search") || "";
+  const getParam = (key: string) => O.fromNullable(searchParams.get(key));
+  const initialSearch = O.getWithDefault(getParam("search"), "");
 
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const debouncedSearch = useDebounce(searchTerm, 500);
 
   useEffect(() => {
-    const currentSearch = searchParams.get("search") || "";
-    const currentGenre = searchParams.get("genre") || "all";
-    const currentSort = searchParams.get("sort") || "title-asc";
-    const currentPage = parseInt(searchParams.get("page") || "1", 10);
+    const currentSearch = O.getWithDefault(getParam("search"), "");
+    const currentGenre = O.getWithDefault(getParam("genre"), "all");
+    const currentSort = O.getWithDefault(getParam("sort"), "title-asc");
+    const currentPage = O.getWithDefault(
+      O.map(getParam("page"), (p) => parseInt(p, 10)),
+      1
+    );
 
     setSearchTerm(currentSearch);
 
@@ -79,7 +85,7 @@ const TrackList = () => {
     const newParams = new URLSearchParams(searchParams.toString());
 
     Object.entries(params).forEach(([key, value]) => {
-      if (value && value !== "all") {
+      if (value && value !== "all" && !(key === "sort" && value === "title-asc")) {
         newParams.set(key, value);
       } else {
         newParams.delete(key);
@@ -124,9 +130,9 @@ const TrackList = () => {
   const areSomeTracksSelected = selectedTrackIds.length > 0;
 
   const hasActiveFilters =
-    searchParams.has("search") ||
-    (searchParams.has("genre") && searchParams.get("genre") !== "all") ||
-    (searchParams.has("sort") && searchParams.get("sort") !== "title-asc");
+    O.isSome(getParam("search")) ||
+    O.getWithDefault(O.map(getParam("genre"), genre => genre !== "all"), false) ||
+    O.getWithDefault(O.map(getParam("sort"), sort => sort !== "title-asc"), false);
 
   return (
     <div className="container max-w-7xl py-8 px-4">
@@ -159,7 +165,7 @@ const TrackList = () => {
 
         <div className="flex gap-4 w-full md:w-auto flex-wrap">
           <Select
-            value={searchParams.get("sort") || "title-asc"}
+            value={O.getWithDefault(getParam("sort"), "title-asc")}
             onValueChange={handleSortChange}
           >
             <SelectTrigger
@@ -179,7 +185,7 @@ const TrackList = () => {
           </Select>
 
           <Select
-            value={searchParams.get("genre") || "all"}
+            value={O.getWithDefault(getParam("genre"), "all")}
             onValueChange={handleGenreChange}
           >
             <SelectTrigger
@@ -228,7 +234,7 @@ const TrackList = () => {
           <Music className="h-12 w-12 mx-auto text-muted-foreground" />
           <h2 className="mt-4 text-xl font-medium">No tracks found</h2>
           <p className="mt-2 text-muted-foreground">
-            {searchParams.has("search") || searchParams.has("genre")
+            {O.isSome(getParam("search")) || O.isSome(getParam("genre"))
               ? "Try adjusting your search or filters"
               : "Add your first track to get started"}
           </p>
