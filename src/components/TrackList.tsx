@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Music, Plus, Search, Trash2, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { O } from "@mobily/ts-belt";
+import { O, pipe } from "@mobily/ts-belt";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,9 +51,10 @@ const TrackList = () => {
     const currentSearch = O.getWithDefault(getParam("search"), "");
     const currentGenre = O.getWithDefault(getParam("genre"), "all");
     const currentSort = O.getWithDefault(getParam("sort"), "title-asc");
-    const currentPage = O.getWithDefault(
-      O.map(getParam("page"), (p) => parseInt(p, 10)),
-      1
+    const currentPage = pipe(
+      getParam("page"),
+      O.map((p) => parseInt(p, 10)),
+      O.getWithDefault<number>(1)
     );
 
     setSearchTerm(currentSearch);
