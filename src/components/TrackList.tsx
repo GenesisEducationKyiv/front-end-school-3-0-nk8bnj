@@ -86,10 +86,12 @@ const TrackList = () => {
     const newParams = new URLSearchParams(searchParams.toString());
 
     Object.entries(params).forEach(([key, value]) => {
-      if (value && value !== "all" && !(key === "sort" && value === "title-asc")) {
-        newParams.set(key, value);
-      } else {
+      const isDefaultValue = !value || value === "all" || (key === "sort" && value === "title-asc");
+
+      if (isDefaultValue) {
         newParams.delete(key);
+      } else {
+        newParams.set(key, value);
       }
     });
 
@@ -98,8 +100,8 @@ const TrackList = () => {
       newParams.delete("page");
     }
 
-    const newUrl = `${window.location.pathname}${newParams.toString() ? `?${newParams.toString()}` : ""
-      }`;
+    const newParamsString = newParams.toString() ? `?${newParams.toString()}` : "";
+    const newUrl = `${window.location.pathname}${newParamsString}`;
 
     router.push(newUrl);
   };
