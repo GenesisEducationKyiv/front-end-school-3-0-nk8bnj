@@ -1,6 +1,6 @@
 # Security Audit Report
 
-**Date:** 15-06-2025
+**Date:** 15-06-2025      
 **Project:** track-manager v0.1.0  
 **Audit Type:** Dependency Security Assessment
 
