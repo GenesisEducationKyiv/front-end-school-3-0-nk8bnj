@@ -10,20 +10,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { Upload, Music, Trash2, PlusCircle } from "lucide-react";
 import useTracksStore from "@/store/useTracksStore";
+import { useUploadTrackFileMutation, useDeleteTrackFileMutation } from "@/hooks/useTracksQueries";
 
 const UploadTrackModal = () => {
   const {
     uploadModalOpen,
     closeUploadModal,
-    uploadFile,
-    deleteFile,
     selectedTrack,
-    isUploading,
     openCreateModal,
   } = useTracksStore();
 
+  const uploadMutation = useUploadTrackFileMutation();
+  const deleteMutation = useDeleteTrackFileMutation();
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string>("");
+
+  const isUploading = uploadMutation.isPending || deleteMutation.isPending;
 
   useEffect(() => {
     if (uploadModalOpen) {
@@ -71,8 +74,9 @@ const UploadTrackModal = () => {
 
     try {
       setError("");
-      await uploadFile(selectedFile);
+      await uploadMutation.mutateAsync({ id: selectedTrack.id, file: selectedFile });
       setSelectedFile(null);
+      closeUploadModal();
     } catch (error) {
       console.error("Upload failed:", error);
       const errorMessage =
@@ -89,8 +93,11 @@ const UploadTrackModal = () => {
   };
 
   const handleDeleteFile = async () => {
+    if (!selectedTrack) return;
+
     try {
-      await deleteFile();
+      await deleteMutation.mutateAsync(selectedTrack.id);
+      closeUploadModal();
     } catch (error) {
       console.error("Delete failed:", error);
     }
@@ -131,14 +138,6 @@ const UploadTrackModal = () => {
                   </p>
                 </div>
               </div>
-
-              {selectedTrack.audioFile && (
-                <audio
-                  src={selectedTrack.audioFile}
-                  controls
-                  className="w-full"
-                />
-              )}
 
               {error && <p className="text-red-500 text-sm">{error}</p>}
 
