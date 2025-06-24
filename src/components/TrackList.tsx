@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import useTracksStore from "@/store/useTracksStore";
+import { useTracksQuery, useGenresQuery } from "@/hooks/useTracksQueries";
 import TrackCard from "./TrackCard";
 import { useDebounce } from "@/hooks/useDebounce";
 import Pagination from "./Pagination";
@@ -25,27 +26,38 @@ const TrackList = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const {
-    tracks,
-    genres,
-    isLoading,
-    currentPage,
-    totalPages,
-    fetchAllGenres,
-    setPage,
-    setSort,
-    setFilter,
-    openCreateModal,
-    openBulkDeleteModal,
-    selectedTrackIds,
-    toggleAllTracksSelection,
-  } = useTracksStore();
+  const currentPage = useTracksStore((state) => state.currentPage);
+  const itemsPerPage = useTracksStore((state) => state.itemsPerPage);
+  const sort = useTracksStore((state) => state.sort);
+  const filter = useTracksStore((state) => state.filter);
+  const setPage = useTracksStore((state) => state.setPage);
+  const setSort = useTracksStore((state) => state.setSort);
+  const setFilter = useTracksStore((state) => state.setFilter);
+  const openCreateModal = useTracksStore((state) => state.openCreateModal);
+  const openBulkDeleteModal = useTracksStore((state) => state.openBulkDeleteModal);
+  const selectedTrackIds = useTracksStore((state) => state.selectedTrackIds);
+  const toggleAllTracksSelection = useTracksStore((state) => state.toggleAllTracksSelection);
+  const clearTrackSelection = useTracksStore((state) => state.clearTrackSelection);
 
   const getParam = (key: string) => O.fromNullable(searchParams.get(key));
   const initialSearch = O.getWithDefault(getParam("search"), "");
 
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const debouncedSearch = useDebounce(searchTerm, 500);
+
+  const { data: tracksData, isLoading } = useTracksQuery(
+    currentPage,
+    itemsPerPage,
+    sort.field,
+    sort.direction,
+    filter.search || undefined,
+    filter.genres.length > 0 ? filter.genres[0] : undefined
+  );
+
+  const { data: genres = [] } = useGenresQuery();
+
+  const tracks = tracksData?.data || [];
+  const totalPages = tracksData?.meta?.totalPages || 1;
 
   useEffect(() => {
     const currentSearch = O.getWithDefault(getParam("search"), "");
@@ -77,10 +89,6 @@ const TrackList = () => {
   useEffect(() => {
     updateQueryParams({ search: debouncedSearch });
   }, [debouncedSearch]);
-
-  useEffect(() => {
-    void fetchAllGenres();
-  }, [fetchAllGenres]);
 
   const updateQueryParams = (params: Record<string, string>) => {
     const newParams = new URLSearchParams(searchParams.toString());
@@ -115,6 +123,7 @@ const TrackList = () => {
   };
 
   const handlePageChange = (page: number) => {
+    clearTrackSelection();
     updateQueryParams({ page: page.toString() });
   };
 
@@ -136,6 +145,10 @@ const TrackList = () => {
     O.isSome(getParam("search")) ||
     O.getWithDefault(O.map(getParam("genre"), genre => genre !== "all"), false) ||
     O.getWithDefault(O.map(getParam("sort"), sort => sort !== "title-asc"), false);
+
+  const handleToggleAllTracks = () => {
+    toggleAllTracksSelection(tracks);
+  };
 
   return (
     <div className="container max-w-7xl py-8 px-4">
@@ -199,7 +212,7 @@ const TrackList = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Genres</SelectItem>
-              {genres.map((genre) => (
+              {genres.map((genre: string) => (
                 <SelectItem key={genre} value={genre}>
                   {genre}
                 </SelectItem>
@@ -255,7 +268,7 @@ const TrackList = () => {
             <div className="flex items-center gap-2">
               <Checkbox
                 checked={areAllTracksSelected}
-                onCheckedChange={toggleAllTracksSelection}
+                onCheckedChange={handleToggleAllTracks}
                 id="select-all"
                 data-testid="select-all"
               />

@@ -21,16 +21,15 @@ import { Badge } from "@/components/ui/badge";
 import { X, Plus } from "lucide-react";
 import useTracksStore from "@/store/useTracksStore";
 import { TrackFormData } from "@/types/schemas";
+import { useGenresQuery, useUpdateTrackMutation } from "@/hooks/useTracksQueries";
 
 const EditTrackModal = () => {
-  const {
-    editModalOpen,
-    closeEditModal,
-    updateSelectedTrack,
-    genres,
-    selectedTrack,
-    isLoading,
-  } = useTracksStore();
+  const editModalOpen = useTracksStore((state) => state.editModalOpen);
+  const closeEditModal = useTracksStore((state) => state.closeEditModal);
+  const selectedTrack = useTracksStore((state) => state.selectedTrack);
+
+  const { data: genres = [] } = useGenresQuery();
+  const updateTrackMutation = useUpdateTrackMutation();
 
   const [formData, setFormData] = useState<TrackFormData>({
     title: "",
@@ -99,9 +98,13 @@ const EditTrackModal = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) return;
+    if (!validateForm() || !selectedTrack) return;
 
-    await updateSelectedTrack(formData);
+    await updateTrackMutation.mutateAsync({
+      id: selectedTrack.id,
+      data: formData,
+    });
+    closeEditModal();
   };
 
   return (
@@ -204,8 +207,8 @@ const EditTrackModal = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {genres
-                    .filter((genre) => !formData.genres.includes(genre))
-                    .map((genre) => (
+                    .filter((genre: string) => !formData.genres.includes(genre))
+                    .map((genre: string) => (
                       <SelectItem key={genre} value={genre}>
                         {genre}
                       </SelectItem>
@@ -255,10 +258,10 @@ const EditTrackModal = () => {
             </Button>
             <Button
               type="submit"
-              disabled={isLoading}
+              disabled={updateTrackMutation.isPending}
               data-testid="submit-button"
             >
-              {isLoading ? "Saving..." : "Save Changes"}
+              {updateTrackMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </form>

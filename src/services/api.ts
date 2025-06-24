@@ -158,7 +158,7 @@ export const deleteTrack = async (
   return ok(undefined);
 };
 
-export const deleteTracks = async (
+export const bulkDelete = async (
   ids: string[]
 ): Promise<ResultAsync<{ success: string[]; failed: string[] }, ApiError>> => {
   if (ids.length === 0) {
