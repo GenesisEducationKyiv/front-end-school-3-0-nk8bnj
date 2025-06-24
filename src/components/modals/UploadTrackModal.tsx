@@ -13,12 +13,10 @@ import useTracksStore from "@/store/useTracksStore";
 import { useUploadTrackFileMutation, useDeleteTrackFileMutation } from "@/hooks/useTracksQueries";
 
 const UploadTrackModal = () => {
-  const {
-    uploadModalOpen,
-    closeUploadModal,
-    selectedTrack,
-    openCreateModal,
-  } = useTracksStore();
+  const uploadModalOpen = useTracksStore((state) => state.uploadModalOpen);
+  const closeUploadModal = useTracksStore((state) => state.closeUploadModal);
+  const selectedTrack = useTracksStore((state) => state.selectedTrack);
+  const openCreateModal = useTracksStore((state) => state.openCreateModal);
 
   const uploadMutation = useUploadTrackFileMutation();
   const deleteMutation = useDeleteTrackFileMutation();

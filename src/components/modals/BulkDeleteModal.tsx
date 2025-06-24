@@ -14,12 +14,11 @@ import useTracksStore from "@/store/useTracksStore";
 import { useBulkDeleteMutation } from "@/hooks/useTracksQueries";
 
 const BulkDeleteModal = () => {
-  const {
-    selectedTrackIds,
-    bulkDeleteModalOpen,
-    closeBulkDeleteModal,
-    clearTrackSelection,
-  } = useTracksStore();
+
+  const selectedTrackIds = useTracksStore((state) => state.selectedTrackIds);
+  const bulkDeleteModalOpen = useTracksStore((state) => state.bulkDeleteModalOpen);
+  const closeBulkDeleteModal = useTracksStore((state) => state.closeBulkDeleteModal);
+  const clearTrackSelection = useTracksStore((state) => state.clearTrackSelection);
 
   const bulkDeleteMutation = useBulkDeleteMutation();
 

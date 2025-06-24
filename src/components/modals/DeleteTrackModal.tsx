@@ -14,11 +14,9 @@ import useTracksStore from "@/store/useTracksStore";
 import { useDeleteTrackMutation } from "@/hooks/useTracksQueries";
 
 const DeleteTrackModal = () => {
-  const {
-    deleteModalOpen,
-    closeDeleteModal,
-    selectedTrack,
-  } = useTracksStore();
+  const deleteModalOpen = useTracksStore((state) => state.deleteModalOpen);
+  const closeDeleteModal = useTracksStore((state) => state.closeDeleteModal);
+  const selectedTrack = useTracksStore((state) => state.selectedTrack);
 
   const deleteTrackMutation = useDeleteTrackMutation();
 

@@ -32,10 +32,8 @@ const initialFormData: TrackFormData = {
 };
 
 const CreateTrackModal = () => {
-  const {
-    createModalOpen,
-    closeCreateModal,
-  } = useTracksStore();
+  const createModalOpen = useTracksStore((state) => state.createModalOpen);
+  const closeCreateModal = useTracksStore((state) => state.closeCreateModal);
 
   const createTrackMutation = useCreateTrackMutation();
   const { data: genres = [] } = useGenresQuery();

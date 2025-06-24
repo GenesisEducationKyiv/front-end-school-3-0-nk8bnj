@@ -24,11 +24,9 @@ import { TrackFormData } from "@/types/schemas";
 import { useGenresQuery, useUpdateTrackMutation } from "@/hooks/useTracksQueries";
 
 const EditTrackModal = () => {
-  const {
-    editModalOpen,
-    closeEditModal,
-    selectedTrack,
-  } = useTracksStore();
+  const editModalOpen = useTracksStore((state) => state.editModalOpen);
+  const closeEditModal = useTracksStore((state) => state.closeEditModal);
+  const selectedTrack = useTracksStore((state) => state.selectedTrack);
 
   const { data: genres = [] } = useGenresQuery();
   const updateTrackMutation = useUpdateTrackMutation();

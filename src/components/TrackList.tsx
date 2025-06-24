@@ -26,19 +26,18 @@ const TrackList = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const {
-    currentPage,
-    itemsPerPage,
-    sort,
-    filter,
-    setPage,
-    setSort,
-    setFilter,
-    openCreateModal,
-    openBulkDeleteModal,
-    selectedTrackIds,
-    toggleAllTracksSelection,
-  } = useTracksStore();
+  const currentPage = useTracksStore((state) => state.currentPage);
+  const itemsPerPage = useTracksStore((state) => state.itemsPerPage);
+  const sort = useTracksStore((state) => state.sort);
+  const filter = useTracksStore((state) => state.filter);
+  const setPage = useTracksStore((state) => state.setPage);
+  const setSort = useTracksStore((state) => state.setSort);
+  const setFilter = useTracksStore((state) => state.setFilter);
+  const openCreateModal = useTracksStore((state) => state.openCreateModal);
+  const openBulkDeleteModal = useTracksStore((state) => state.openBulkDeleteModal);
+  const selectedTrackIds = useTracksStore((state) => state.selectedTrackIds);
+  const toggleAllTracksSelection = useTracksStore((state) => state.toggleAllTracksSelection);
+  const clearTrackSelection = useTracksStore((state) => state.clearTrackSelection);
 
   const getParam = (key: string) => O.fromNullable(searchParams.get(key));
   const initialSearch = O.getWithDefault(getParam("search"), "");
@@ -124,6 +123,7 @@ const TrackList = () => {
   };
 
   const handlePageChange = (page: number) => {
+    clearTrackSelection();
     updateQueryParams({ page: page.toString() });
   };
 

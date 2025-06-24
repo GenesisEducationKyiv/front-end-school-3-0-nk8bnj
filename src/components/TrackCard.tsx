@@ -18,15 +18,13 @@ interface TrackCardProps {
 }
 
 const TrackCard = ({ track }: TrackCardProps) => {
-  const {
-    openEditModal,
-    openDeleteModal,
-    openUploadModal,
-    currentlyPlaying,
-    setCurrentlyPlaying,
-    toggleTrackSelection,
-    selectedTrackIds,
-  } = useTracksStore();
+  const openEditModal = useTracksStore((state) => state.openEditModal);
+  const openDeleteModal = useTracksStore((state) => state.openDeleteModal);
+  const openUploadModal = useTracksStore((state) => state.openUploadModal);
+  const currentlyPlaying = useTracksStore((state) => state.currentlyPlaying);
+  const setCurrentlyPlaying = useTracksStore((state) => state.setCurrentlyPlaying);
+  const toggleTrackSelection = useTracksStore((state) => state.toggleTrackSelection);
+  const selectedTrackIds = useTracksStore((state) => state.selectedTrackIds);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
