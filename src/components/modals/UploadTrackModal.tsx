@@ -132,14 +132,6 @@ const UploadTrackModal = () => {
                 </div>
               </div>
 
-              {selectedTrack.audioFile && (
-                <audio
-                  src={selectedTrack.audioFile}
-                  controls
-                  className="w-full"
-                />
-              )}
-
               {error && <p className="text-red-500 text-sm">{error}</p>}
 
               <div className="flex space-x-2 justify-end">

@@ -46,6 +46,7 @@ const safeFetch = (
     details: error,
   }));
 };
+
 export const fetchTracks = async (
   page = 1,
   limit = 8,
