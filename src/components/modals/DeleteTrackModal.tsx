@@ -13,13 +13,11 @@ import {
 import useTracksStore from "@/store/useTracksStore";
 
 const DeleteTrackModal = () => {
-  const {
-    deleteModalOpen,
-    closeDeleteModal,
-    deleteSelectedTrack,
-    selectedTrack,
-    isDeleting,
-  } = useTracksStore();
+  const deleteModalOpen = useTracksStore((state) => state.deleteModalOpen);
+  const closeDeleteModal = useTracksStore((state) => state.closeDeleteModal);
+  const deleteSelectedTrack = useTracksStore((state) => state.deleteSelectedTrack);
+  const selectedTrack = useTracksStore((state) => state.selectedTrack);
+  const isDeleting = useTracksStore((state) => state.isDeleting);
 
   const handleDelete = async () => {
     await deleteSelectedTrack();

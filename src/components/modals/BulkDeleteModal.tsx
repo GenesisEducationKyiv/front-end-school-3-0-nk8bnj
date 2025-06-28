@@ -13,13 +13,12 @@ import { Button } from "@/components/ui/button";
 import useTracksStore from "@/store/useTracksStore";
 
 const BulkDeleteModal = () => {
-  const {
-    selectedTrackIds,
-    isDeleting,
-    bulkDeleteModalOpen,
-    closeBulkDeleteModal,
-    deleteSelectedTracks,
-  } = useTracksStore();
+  const selectedTrackIds = useTracksStore((state) => state.selectedTrackIds);
+  const isDeleting = useTracksStore((state) => state.isDeleting);
+  const bulkDeleteModalOpen = useTracksStore((state) => state.bulkDeleteModalOpen);
+  const closeBulkDeleteModal = useTracksStore((state) => state.closeBulkDeleteModal);
+  const deleteSelectedTracks = useTracksStore((state) => state.deleteSelectedTracks);
+
 
   const handleConfirmDelete = async () => {
     await deleteSelectedTracks();

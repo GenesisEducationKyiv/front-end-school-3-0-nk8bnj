@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@mobily/ts-belt": "^3.13.1",
+    "@next/bundle-analyzer": "^15.3.4",
     "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-aspect-ratio": "^1.1.0",
     "@radix-ui/react-avatar": "^1.1.0",
@@ -45,6 +46,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@next/eslint-plugin-next": "^15.3.4",
     "@playwright/experimental-ct-react": "^1.53.0",
     "@playwright/test": "^1.53.0",
     "@tailwindcss/postcss": "^4",

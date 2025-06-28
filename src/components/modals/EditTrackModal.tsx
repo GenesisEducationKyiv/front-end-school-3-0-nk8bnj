@@ -23,14 +23,12 @@ import useTracksStore from "@/store/useTracksStore";
 import { TrackFormData } from "@/types/schemas";
 
 const EditTrackModal = () => {
-  const {
-    editModalOpen,
-    closeEditModal,
-    updateSelectedTrack,
-    genres,
-    selectedTrack,
-    isLoading,
-  } = useTracksStore();
+  const editModalOpen = useTracksStore((state) => state.editModalOpen);
+  const closeEditModal = useTracksStore((state) => state.closeEditModal);
+  const updateSelectedTrack = useTracksStore((state) => state.updateSelectedTrack);
+  const genres = useTracksStore((state) => state.genres);
+  const selectedTrack = useTracksStore((state) => state.selectedTrack);
+  const isLoading = useTracksStore((state) => state.isLoading);
 
   const [formData, setFormData] = useState<TrackFormData>({
     title: "",

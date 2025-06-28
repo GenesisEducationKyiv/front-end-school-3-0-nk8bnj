@@ -31,13 +31,12 @@ const initialFormData: TrackFormData = {
 };
 
 const CreateTrackModal = () => {
-  const {
-    createModalOpen,
-    closeCreateModal,
-    createNewTrack,
-    genres,
-    isCreating,
-  } = useTracksStore();
+  const createModalOpen = useTracksStore((state) => state.createModalOpen);
+  const closeCreateModal = useTracksStore((state) => state.closeCreateModal);
+  const createNewTrack = useTracksStore((state) => state.createNewTrack);
+  const genres = useTracksStore((state) => state.genres);
+  const isCreating = useTracksStore((state) => state.isCreating);
+
 
   const [formData, setFormData] = useState<TrackFormData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});

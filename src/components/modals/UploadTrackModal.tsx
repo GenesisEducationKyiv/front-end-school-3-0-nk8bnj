@@ -12,15 +12,13 @@ import { Upload, Music, Trash2, PlusCircle } from "lucide-react";
 import useTracksStore from "@/store/useTracksStore";
 
 const UploadTrackModal = () => {
-  const {
-    uploadModalOpen,
-    closeUploadModal,
-    uploadFile,
-    deleteFile,
-    selectedTrack,
-    isUploading,
-    openCreateModal,
-  } = useTracksStore();
+  const uploadModalOpen = useTracksStore((state) => state.uploadModalOpen);
+  const closeUploadModal = useTracksStore((state) => state.closeUploadModal);
+  const uploadFile = useTracksStore((state) => state.uploadFile);
+  const deleteFile = useTracksStore((state) => state.deleteFile);
+  const selectedTrack = useTracksStore((state) => state.selectedTrack);
+  const isUploading = useTracksStore((state) => state.isUploading);
+  const openCreateModal = useTracksStore((state) => state.openCreateModal);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string>("");
@@ -131,14 +129,6 @@ const UploadTrackModal = () => {
                   </p>
                 </div>
               </div>
-
-              {selectedTrack.audioFile && (
-                <audio
-                  src={selectedTrack.audioFile}
-                  controls
-                  className="w-full"
-                />
-              )}
 
               {error && <p className="text-red-500 text-sm">{error}</p>}
 
