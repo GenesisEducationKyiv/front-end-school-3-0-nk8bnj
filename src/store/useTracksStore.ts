@@ -16,7 +16,7 @@ const useTracksStore = create<TracksState>((set, get) => ({
   selectedTrack: null,
   selectedTrackIds: [],
   genres: [],
-  isLoading: false,
+  isLoading: true,
   isCreating: false,
   isDeleting: false,
   isUploading: false,
