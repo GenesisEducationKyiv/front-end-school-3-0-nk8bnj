@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, hw9-cicd]
   pull_request:
     branches: [main]
 
@@ -11,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Setup Node.js Environment
         uses: ./.github/actions/setup-node
 
@@ -33,6 +36,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Setup Node.js Environment
         uses: ./.github/actions/setup-node
 
@@ -54,6 +60,9 @@ jobs:
     needs: [lint-and-typecheck, unit-tests]
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Setup Node.js Environment
         uses: ./.github/actions/setup-node
 
