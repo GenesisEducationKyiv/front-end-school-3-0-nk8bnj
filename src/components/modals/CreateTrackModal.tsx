@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { X, Plus } from "lucide-react";
 import useTracksStore from "@/store/useTracksStore";
 import { TrackFormData } from "@/types/schemas";
+import { useCreateTrackMutation, useGenresQuery } from "@/hooks/useTracksQueries";
 
 const initialFormData: TrackFormData = {
   title: "",
@@ -31,13 +32,11 @@ const initialFormData: TrackFormData = {
 };
 
 const CreateTrackModal = () => {
-  const {
-    createModalOpen,
-    closeCreateModal,
-    createNewTrack,
-    genres,
-    isCreating,
-  } = useTracksStore();
+  const createModalOpen = useTracksStore((state) => state.createModalOpen);
+  const closeCreateModal = useTracksStore((state) => state.closeCreateModal);
+
+  const createTrackMutation = useCreateTrackMutation();
+  const { data: genres = [] } = useGenresQuery();
 
   const [formData, setFormData] = useState<TrackFormData>(initialFormData);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -100,7 +99,8 @@ const CreateTrackModal = () => {
 
     if (!validateForm()) return;
 
-    await createNewTrack(formData);
+    await createTrackMutation.mutateAsync(formData);
+    closeCreateModal();
     handleReset();
   };
 
@@ -215,8 +215,8 @@ const CreateTrackModal = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {genres
-                    .filter((genre) => !formData.genres.includes(genre))
-                    .map((genre) => (
+                    .filter((genre: string) => !formData.genres.includes(genre))
+                    .map((genre: string) => (
                       <SelectItem key={genre} value={genre}>
                         {genre}
                       </SelectItem>
@@ -266,10 +266,10 @@ const CreateTrackModal = () => {
             </Button>
             <Button
               type="submit"
-              disabled={isCreating}
+              disabled={createTrackMutation.isPending}
               data-testid="submit-button"
             >
-              {isCreating ? "Creating..." : "Create Track"}
+              {createTrackMutation.isPending ? "Creating..." : "Create Track"}
             </Button>
           </div>
         </form>
