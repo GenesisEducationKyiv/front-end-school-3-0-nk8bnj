@@ -14,6 +14,13 @@ export default defineConfig({
       "src/**/*.integration.test.{js,ts,tsx}",
       "src/**/*.spec.{js,ts,tsx}",
     ],
+    reporters: [
+      'default',
+      ['junit', { outputFile: 'test-results/junit.xml' }],
+      ['json', { outputFile: 'test-results/results.json' }],
+      ['verbose', { outputFile: 'test-results/verbose.log' }]
+    ],
+    outputFile: 'test-results/output.log',
   },
   resolve: {
     alias: {
