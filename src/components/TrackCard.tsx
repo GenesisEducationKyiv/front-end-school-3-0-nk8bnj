@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, UploadCloud, Play, Pause } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import useTracksStore from "@/store/useTracksStore";
 import Image from "next/image";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,7 +17,7 @@ interface TrackCardProps {
   track: Track;
 }
 
-const TrackCard = ({ track }: TrackCardProps) => {
+const TrackCard = memo(({ track }: TrackCardProps) => {
   const openEditModal = useTracksStore((state) => state.openEditModal);
   const openDeleteModal = useTracksStore((state) => state.openDeleteModal);
   const openUploadModal = useTracksStore((state) => state.openUploadModal);
@@ -78,6 +78,7 @@ const TrackCard = ({ track }: TrackCardProps) => {
             className="w-full h-full object-cover"
             width={300}
             height={300}
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
@@ -136,6 +137,7 @@ const TrackCard = ({ track }: TrackCardProps) => {
             src={`http://localhost:8000/api/files/${track.audioFile}`}
             className="audio-player w-full mt-4"
             controls={isPlaying}
+            preload="none" // Don't preload audio until needed
             onEnded={() => {
               setIsPlaying(false);
               setCurrentlyPlaying(null);
@@ -178,6 +180,8 @@ const TrackCard = ({ track }: TrackCardProps) => {
       </CardFooter>
     </Card>
   );
-};
+});
+
+TrackCard.displayName = 'TrackCard';
 
 export default TrackCard;

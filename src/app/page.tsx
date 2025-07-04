@@ -1,14 +1,14 @@
 import { Suspense } from "react";
-import TrackList from "@/components/TrackList";
-import Modals from "@/components/modals/Modals";
+import { DynamicTrackList, DynamicModals } from "@/components/ClientComponents";
+import Loader from "@/components/Loader";
 
 export default function Home() {
   return (
     <main className="flex flex-col items-center">
-      <Suspense fallback={<div>Loading tracks...</div>}>
-        <TrackList />
+      <Suspense fallback={<Loader />}>
+        <DynamicTrackList />
       </Suspense>
-      <Modals />
+      <DynamicModals />
     </main>
   );
 }

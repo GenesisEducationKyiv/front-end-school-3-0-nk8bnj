@@ -1,16 +1,35 @@
 "use client";
 
-import { lazy, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import useTracksStore from '@/store/useTracksStore';
 import ModalSkeletonSmall from '@/components/skeletons/ModalSkeletonSmall';
 import ModalSkeletonLarge from '@/components/skeletons/ModalSkeletonLarge';
 import ModalSkeletonMedium from '@/components/skeletons/ModalSkeletonMedium';
 
-const CreateTrackModal = lazy(() => import('./CreateTrackModal'));
-const EditTrackModal = lazy(() => import('./EditTrackModal'));
-const DeleteTrackModal = lazy(() => import('./DeleteTrackModal'));
-const UploadTrackModal = lazy(() => import('./UploadTrackModal'));
-const BulkDeleteModal = lazy(() => import('./BulkDeleteModal'));
+const CreateTrackModal = dynamic(() => import('./CreateTrackModal'), {
+  loading: () => <ModalSkeletonLarge />,
+  ssr: false,
+});
+
+const EditTrackModal = dynamic(() => import('./EditTrackModal'), {
+  loading: () => <ModalSkeletonLarge />,
+  ssr: false,
+});
+
+const DeleteTrackModal = dynamic(() => import('./DeleteTrackModal'), {
+  loading: () => <ModalSkeletonSmall />,
+  ssr: false,
+});
+
+const UploadTrackModal = dynamic(() => import('./UploadTrackModal'), {
+  loading: () => <ModalSkeletonMedium />,
+  ssr: false,
+});
+
+const BulkDeleteModal = dynamic(() => import('./BulkDeleteModal'), {
+  loading: () => <ModalSkeletonSmall />,
+  ssr: false,
+});
 
 const Modals = () => {
   const createModalOpen = useTracksStore((state) => state.createModalOpen);
@@ -21,35 +40,11 @@ const Modals = () => {
 
   return (
     <>
-      {createModalOpen && (
-        <Suspense fallback={<ModalSkeletonLarge />}>
-          <CreateTrackModal />
-        </Suspense>
-      )}
-
-      {editModalOpen && (
-        <Suspense fallback={<ModalSkeletonLarge />}>
-          <EditTrackModal />
-        </Suspense>
-      )}
-
-      {deleteModalOpen && (
-        <Suspense fallback={<ModalSkeletonSmall />}>
-          <DeleteTrackModal />
-        </Suspense>
-      )}
-
-      {uploadModalOpen && (
-        <Suspense fallback={<ModalSkeletonMedium />}>
-          <UploadTrackModal />
-        </Suspense>
-      )}
-
-      {bulkDeleteModalOpen && (
-        <Suspense fallback={<ModalSkeletonSmall />}>
-          <BulkDeleteModal />
-        </Suspense>
-      )}
+      {createModalOpen && <CreateTrackModal />}
+      {editModalOpen && <EditTrackModal />}
+      {deleteModalOpen && <DeleteTrackModal />}
+      {uploadModalOpen && <UploadTrackModal />}
+      {bulkDeleteModalOpen && <BulkDeleteModal />}
     </>
   );
 };

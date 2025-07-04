@@ -4,16 +4,41 @@ import { useEffect } from "react";
 import { Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { O, pipe } from "@mobily/ts-belt";
+import dynamic from "next/dynamic";
 
 import { Button } from "@/components/ui/button";
 import useTracksStore from "@/store/useTracksStore";
 import { useTracksQuery } from "@/hooks/useTracksQueries";
-import TrackCard from "./TrackCard";
-import Pagination from "./Pagination";
 import { Checkbox } from "./ui/checkbox";
 import { SortDirection, SortField } from "@/types/types";
 import EmptyState from "./EmptyState";
 import Loader from "./Loader";
+
+const TrackCard = dynamic(() => import("./TrackCard"), {
+  loading: () => (
+    <div className="bg-card rounded-lg border p-4 animate-pulse">
+      <div className="aspect-square bg-gray-200 rounded mb-4"></div>
+      <div className="space-y-2">
+        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+      </div>
+    </div>
+  ),
+  ssr: true,
+});
+
+const Pagination = dynamic(() => import("./Pagination"), {
+  loading: () => (
+    <div className="flex justify-center items-center gap-2 py-4">
+      <div className="h-10 w-20 bg-gray-200 rounded animate-pulse"></div>
+      <div className="h-10 w-10 bg-gray-200 rounded animate-pulse"></div>
+      <div className="h-10 w-10 bg-gray-200 rounded animate-pulse"></div>
+      <div className="h-10 w-20 bg-gray-200 rounded animate-pulse"></div>
+    </div>
+  ),
+  ssr: false,
+});
 
 const TrackList = () => {
   const router = useRouter();
