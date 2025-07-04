@@ -77,7 +77,7 @@ const TrackCard = ({ track }: TrackCardProps) => {
             alt={track.title}
             className="w-full h-full object-cover"
             width={300}
-            height={150}
+            height={300}
           />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center">

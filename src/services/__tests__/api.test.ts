@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { createTrack, fetchTracks, updateTrack, deleteTrack, fetchGenres, deleteTracks } from '../api'
+import { createTrack, fetchTracks, updateTrack, deleteTrack, fetchGenres, bulkDelete } from '../api'
 import { TrackFormData } from '@/types/schemas'
 import { SortField, SortDirection } from '@/types/types'
 
@@ -309,9 +309,9 @@ describe('API Service', () => {
     })
   })
 
-  describe('deleteTracks', () => {
+  describe('bulkDelete', () => {
     it('should handle empty IDs array', async () => {
-      const result = await deleteTracks([])
+      const result = await bulkDelete([])
 
       expect(result.isErr()).toBe(true)
       if (result.isErr()) {
@@ -333,7 +333,7 @@ describe('API Service', () => {
         json: vi.fn().mockResolvedValue(mockResponse)
       })
 
-      const result = await deleteTracks(ids)
+      const result = await bulkDelete(ids)
 
       expect(mockFetch).toHaveBeenCalledWith(
         'http://localhost:3001/api/tracks/delete',
