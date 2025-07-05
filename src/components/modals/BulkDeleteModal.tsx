@@ -11,18 +11,27 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import useTracksStore from "@/store/useTracksStore";
+import { useBulkDeleteMutation } from "@/hooks/useTracksQueries";
 
 const BulkDeleteModal = () => {
-  const {
-    selectedTrackIds,
-    isDeleting,
-    bulkDeleteModalOpen,
-    closeBulkDeleteModal,
-    deleteSelectedTracks,
-  } = useTracksStore();
 
-  const handleConfirmDelete = async () => {
-    await deleteSelectedTracks();
+  const selectedTrackIds = useTracksStore((state) => state.selectedTrackIds);
+  const bulkDeleteModalOpen = useTracksStore((state) => state.bulkDeleteModalOpen);
+  const closeBulkDeleteModal = useTracksStore((state) => state.closeBulkDeleteModal);
+  const clearTrackSelection = useTracksStore((state) => state.clearTrackSelection);
+
+  const bulkDeleteMutation = useBulkDeleteMutation();
+
+  const handleConfirmDelete = () => {
+    bulkDeleteMutation.mutate(selectedTrackIds, {
+      onSuccess: () => {
+        clearTrackSelection();
+        closeBulkDeleteModal();
+      },
+      onError: (error) => {
+        console.error("Failed to delete tracks:", error);
+      }
+    });
   };
 
   return (
@@ -36,13 +45,13 @@ const BulkDeleteModal = () => {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={bulkDeleteMutation.isPending}>Cancel</AlertDialogCancel>
           <Button
             variant="destructive"
             onClick={() => void handleConfirmDelete()}
-            disabled={isDeleting}
+            disabled={bulkDeleteMutation.isPending}
           >
-            {isDeleting ? (
+            {bulkDeleteMutation.isPending ? (
               <>
                 <span className="mr-2">Deleting...</span>
                 <div className="animate-spin h-4 w-4 border-2 border-gray-300 rounded-full border-t-white"></div>

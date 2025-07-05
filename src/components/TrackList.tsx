@@ -1,51 +1,76 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Music, Plus, Search, Trash2, X } from "lucide-react";
+import { useEffect, useMemo, useCallback } from "react";
+import { Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { O, pipe } from "@mobily/ts-belt";
+import dynamic from "next/dynamic";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import useTracksStore from "@/store/useTracksStore";
-import TrackCard from "./TrackCard";
-import { useDebounce } from "@/hooks/useDebounce";
-import Pagination from "./Pagination";
+import { useTracksQuery } from "@/hooks/useTracksQueries";
 import { Checkbox } from "./ui/checkbox";
-import { SortDirection, SortField, SortValue } from "@/types/types";
+import { SortDirection, SortField } from "@/types/types";
+import EmptyState from "./EmptyState";
+import Loader from "./Loader";
+
+const TrackCard = dynamic(() => import("./TrackCard"), {
+  loading: () => (
+    <div className="bg-card rounded-lg border p-4 animate-pulse">
+      <div className="aspect-square bg-gray-200 rounded mb-4"></div>
+      <div className="space-y-2">
+        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+      </div>
+    </div>
+  ),
+  ssr: true,
+});
+
+const Pagination = dynamic(() => import("./Pagination"), {
+  loading: () => (
+    <div className="flex justify-center items-center gap-2 py-4">
+      <div className="h-10 w-20 bg-gray-200 rounded animate-pulse"></div>
+      <div className="h-10 w-10 bg-gray-200 rounded animate-pulse"></div>
+      <div className="h-10 w-10 bg-gray-200 rounded animate-pulse"></div>
+      <div className="h-10 w-20 bg-gray-200 rounded animate-pulse"></div>
+    </div>
+  ),
+  ssr: false,
+});
 
 const TrackList = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const {
-    tracks,
-    genres,
-    isLoading,
-    currentPage,
-    totalPages,
-    fetchAllGenres,
-    setPage,
-    setSort,
-    setFilter,
-    openCreateModal,
-    openBulkDeleteModal,
-    selectedTrackIds,
-    toggleAllTracksSelection,
-  } = useTracksStore();
+  const currentPage = useTracksStore((state) => state.currentPage);
+  const itemsPerPage = useTracksStore((state) => state.itemsPerPage);
+  const sort = useTracksStore((state) => state.sort);
+  const filter = useTracksStore((state) => state.filter);
+  const setPage = useTracksStore((state) => state.setPage);
+  const setSort = useTracksStore((state) => state.setSort);
+  const setFilter = useTracksStore((state) => state.setFilter);
+  const openCreateModal = useTracksStore((state) => state.openCreateModal);
+  const openBulkDeleteModal = useTracksStore((state) => state.openBulkDeleteModal);
+  const selectedTrackIds = useTracksStore((state) => state.selectedTrackIds);
+  const toggleAllTracksSelection = useTracksStore((state) => state.toggleAllTracksSelection);
+  const clearTrackSelection = useTracksStore((state) => state.clearTrackSelection);
+
 
   const getParam = (key: string) => O.fromNullable(searchParams.get(key));
-  const initialSearch = O.getWithDefault(getParam("search"), "");
 
-  const [searchTerm, setSearchTerm] = useState(initialSearch);
-  const debouncedSearch = useDebounce(searchTerm, 500);
+  const { data: tracksData, isLoading } = useTracksQuery(
+    currentPage,
+    itemsPerPage,
+    sort.field,
+    sort.direction,
+    filter.search || undefined,
+    filter.genres.length > 0 ? filter.genres[0] : undefined
+  );
+
+  const tracks = tracksData?.data || [];
+  const totalPages = tracksData?.meta?.totalPages || 1;
 
   useEffect(() => {
     const currentSearch = O.getWithDefault(getParam("search"), "");
@@ -56,8 +81,6 @@ const TrackList = () => {
       O.map((p) => parseInt(p, 10)),
       O.getWithDefault<number>(1)
     );
-
-    setSearchTerm(currentSearch);
 
     setFilter({
       search: currentSearch,
@@ -74,15 +97,7 @@ const TrackList = () => {
 
   }, [searchParams, setFilter, setSort, setPage]);
 
-  useEffect(() => {
-    updateQueryParams({ search: debouncedSearch });
-  }, [debouncedSearch]);
-
-  useEffect(() => {
-    void fetchAllGenres();
-  }, [fetchAllGenres]);
-
-  const updateQueryParams = (params: Record<string, string>) => {
+  const updateQueryParams = useCallback((params: Record<string, string>) => {
     const newParams = new URLSearchParams(searchParams.toString());
 
     Object.entries(params).forEach(([key, value]) => {
@@ -104,158 +119,46 @@ const TrackList = () => {
     const newUrl = `${window.location.pathname}${newParamsString}`;
 
     router.push(newUrl);
-  };
+  }, [searchParams, router]);
 
-  const handleSortChange = (value: SortValue) => {
-    updateQueryParams({ sort: value, page: "1" });
-  };
-
-  const handleGenreChange = (value: string) => {
-    updateQueryParams({ genre: value, page: "1" });
-  };
-
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
+    clearTrackSelection();
     updateQueryParams({ page: page.toString() });
-  };
+  }, [clearTrackSelection, updateQueryParams]);
 
-  const clearFilters = () => {
-    setSearchTerm("");
-    updateQueryParams({
-      search: "",
-      genre: "all",
-      sort: "title-asc",
-      page: "1",
-    });
-  };
+  const areAllTracksSelected = useMemo(() =>
+    tracks.length > 0 && selectedTrackIds.length === tracks.length,
+    [tracks.length, selectedTrackIds.length]
+  );
 
-  const areAllTracksSelected =
-    tracks.length > 0 && selectedTrackIds.length === tracks.length;
-  const areSomeTracksSelected = selectedTrackIds.length > 0;
+  const areSomeTracksSelected = useMemo(() =>
+    selectedTrackIds.length > 0,
+    [selectedTrackIds.length]
+  );
 
   const hasActiveFilters =
     O.isSome(getParam("search")) ||
     O.getWithDefault(O.map(getParam("genre"), genre => genre !== "all"), false) ||
     O.getWithDefault(O.map(getParam("sort"), sort => sort !== "title-asc"), false);
 
+  if (isLoading) {
+    return <Loader />;
+  }
+
   return (
-    <div className="container max-w-7xl py-8 px-4">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
-        <h1
-          className="text-3xl font-bold flex items-center"
-          data-testid="tracks-header"
-        >
-          <Music className="mr-2 h-8 w-8" /> Track Manager
-        </h1>
-
-        <div className="flex items-center gap-2">
-          <Button onClick={openCreateModal} data-testid="create-track-button">
-            <Plus className="mr-2 h-4 w-4" /> Create Track
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-4">
-        <div className="relative w-full md:w-auto flex-grow">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search tracks..."
-            className="pl-10"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            data-testid="search-input"
-          />
-        </div>
-
-        <div className="flex gap-4 w-full md:w-auto flex-wrap">
-          <Select
-            value={O.getWithDefault(getParam("sort"), "title-asc")}
-            onValueChange={handleSortChange}
-          >
-            <SelectTrigger
-              className="w-full md:w-[180px]"
-              data-testid="sort-select"
-            >
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="title-asc">Title (A-Z)</SelectItem>
-              <SelectItem value="title-desc">Title (Z-A)</SelectItem>
-              <SelectItem value="artist-asc">Artist (A-Z)</SelectItem>
-              <SelectItem value="artist-desc">Artist (Z-A)</SelectItem>
-              <SelectItem value="createdAt-desc">Newest First</SelectItem>
-              <SelectItem value="createdAt-asc">Oldest First</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select
-            value={O.getWithDefault(getParam("genre"), "all")}
-            onValueChange={handleGenreChange}
-          >
-            <SelectTrigger
-              className="w-full md:w-[180px]"
-              data-testid="filter-genre"
-            >
-              <SelectValue placeholder="Filter by genre" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Genres</SelectItem>
-              {genres.map((genre) => (
-                <SelectItem key={genre} value={genre}>
-                  {genre}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {hasActiveFilters && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={clearFilters}
-              className="md:w-[40px] h-10"
-              data-testid="clear-filters"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {isLoading ? (
-        <div
-          className="flex justify-center items-center h-64"
-          data-testid="loading-tracks"
-          data-loading="true"
-        >
-          <div
-            className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"
-            data-testid="loading-indicator"
-          ></div>
-        </div>
-      ) : tracks.length === 0 ? (
-        <div className="text-center py-16 bg-card rounded-lg">
-          <Music className="h-12 w-12 mx-auto text-muted-foreground" />
-          <h2 className="mt-4 text-xl font-medium">No tracks found</h2>
-          <p className="mt-2 text-muted-foreground">
-            {O.isSome(getParam("search")) || O.isSome(getParam("genre"))
-              ? "Try adjusting your search or filters"
-              : "Add your first track to get started"}
-          </p>
-          <Button
-            className="mt-4"
-            onClick={openCreateModal}
-            data-testid="create-track-button"
-          >
-            <Plus className="mr-2 h-4 w-4" /> Create Track
-          </Button>
-        </div>
+    <div className="container max-w-7xl">
+      {tracks.length === 0 ? (
+        <EmptyState
+          hasFilters={hasActiveFilters}
+          onCreateTrack={openCreateModal}
+        />
       ) : (
         <>
           <div className="mb-4 min-h-[36px] flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Checkbox
                 checked={areAllTracksSelected}
-                onCheckedChange={toggleAllTracksSelection}
+                onCheckedChange={() => toggleAllTracksSelection(tracks)}
                 id="select-all"
                 data-testid="select-all"
               />

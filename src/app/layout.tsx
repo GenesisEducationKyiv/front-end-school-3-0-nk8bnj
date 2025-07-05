@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
+import QueryProvider from "@/providers/QueryProvider";
+import { DynamicHeader } from "@/components/ClientComponents";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +30,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <QueryProvider>
+          <div className="max-w-7xl mx-auto py-8 px-4">
+            <Suspense fallback={<div>Loading...</div>}>
+              <DynamicHeader />
+            </Suspense>
+            {children}
+          </div>
+        </QueryProvider>
       </body>
     </html>
   );

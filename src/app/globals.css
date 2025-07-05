@@ -6,12 +6,6 @@
   gap: 1.5rem;
 }
 
-@media (max-width: 640px) {
-  .tracks-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .fade-in {
   animation: fadeIn 0.3s ease-in-out;
 }

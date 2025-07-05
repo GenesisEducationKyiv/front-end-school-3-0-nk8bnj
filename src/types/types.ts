@@ -1,14 +1,14 @@
-import { Track, TrackFormData } from "./schemas";
+import { Track } from "./schemas";
 
 export enum SortField {
   TITLE = "title",
-  ARTIST = "artist", 
-  DURATION = "duration"
+  ARTIST = "artist",
+  DURATION = "duration",
 }
 
 export enum SortDirection {
   ASC = "asc",
-  DESC = "desc"
+  DESC = "desc",
 }
 
 export type SortValue =
@@ -19,38 +19,19 @@ export type SortValue =
   | "createdAt-asc"
   | "createdAt-desc";
 
-export interface SortOption {
-  field: SortField;
-  direction: SortDirection;
-}
-
-export interface FilterOptions {
-  search: string;
-  genres: string[];
-  artist?: string;
-}
-
 export interface ApiError {
   message: string;
   status?: number;
   details?: unknown;
 }
 
-export interface TracksState {
-  tracks: Track[];
+export interface ClientState {
   selectedTrack: Track | null;
   selectedTrackIds: string[];
-  genres: string[];
-  isLoading: boolean;
-  isCreating: boolean;
-  isDeleting: boolean;
-  isUploading: boolean;
   currentPage: number;
-  totalTracks: number;
-  totalPages: number;
   itemsPerPage: number;
-  sort: SortOption;
-  filter: FilterOptions;
+  sort: { field: SortField; direction: SortDirection };
+  filter: { search: string; genres: string[] };
   currentlyPlaying: string | null;
 
   createModalOpen: boolean;
@@ -59,26 +40,14 @@ export interface TracksState {
   uploadModalOpen: boolean;
   bulkDeleteModalOpen: boolean;
 
-  fetchAllTracks: () => Promise<void>;
-  fetchAllGenres: () => Promise<void>;
   setPage: (page: number) => void;
-  setItemsPerPage: (limit: number) => void;
-  setSort: (sort: SortOption) => void;
-  setFilter: (filter: FilterOptions) => void;
-  setSearch: (search: string) => void;
-
-  createNewTrack: (data: TrackFormData) => Promise<Track | undefined>;
-  updateSelectedTrack: (data: TrackFormData) => Promise<Track | undefined>;
-  deleteSelectedTrack: () => Promise<void>;
-  uploadFile: (file: File) => Promise<Track | undefined>;
-  deleteFile: () => Promise<Track | undefined>;
+  setSort: (sort: { field: SortField; direction: SortDirection }) => void;
+  setFilter: (filter: { search: string; genres: string[] }) => void;
 
   toggleTrackSelection: (trackId: string) => void;
-  toggleAllTracksSelection: () => void;
+  toggleAllTracksSelection: (tracks: Track[]) => void;
   clearTrackSelection: () => void;
-  deleteSelectedTracks: () => Promise<void>;
 
-  setSelectedTrack: (track: Track | null) => void;
   openCreateModal: () => void;
   closeCreateModal: () => void;
   openEditModal: (track: Track) => void;

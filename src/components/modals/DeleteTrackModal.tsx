@@ -11,18 +11,20 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import useTracksStore from "@/store/useTracksStore";
+import { useDeleteTrackMutation } from "@/hooks/useTracksQueries";
 
 const DeleteTrackModal = () => {
-  const {
-    deleteModalOpen,
-    closeDeleteModal,
-    deleteSelectedTrack,
-    selectedTrack,
-    isDeleting,
-  } = useTracksStore();
+  const deleteModalOpen = useTracksStore((state) => state.deleteModalOpen);
+  const closeDeleteModal = useTracksStore((state) => state.closeDeleteModal);
+  const selectedTrack = useTracksStore((state) => state.selectedTrack);
+
+  const deleteTrackMutation = useDeleteTrackMutation();
 
   const handleDelete = async () => {
-    await deleteSelectedTrack();
+    if (selectedTrack) {
+      await deleteTrackMutation.mutateAsync(selectedTrack.id);
+      closeDeleteModal();
+    }
   };
 
   return (
@@ -39,16 +41,16 @@ const DeleteTrackModal = () => {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting} data-testid="cancel-delete">
+          <AlertDialogCancel disabled={deleteTrackMutation.isPending} data-testid="cancel-delete">
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={() => void handleDelete()}
-            disabled={isDeleting}
+            disabled={deleteTrackMutation.isPending}
             className="bg-slate-300 text-red-500-foreground hover:bg-red-500/90"
             data-testid="confirm-delete"
           >
-            {isDeleting ? "Deleting..." : "Delete"}
+            {deleteTrackMutation.isPending ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
