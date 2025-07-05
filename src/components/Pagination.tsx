@@ -1,3 +1,4 @@
+import { memo, useMemo } from "react";
 import {
   Pagination as PaginationUI,
   PaginationContent,
@@ -14,44 +15,46 @@ interface PaginationProps {
   setPage: (page: number) => void;
 }
 
-const Pagination = ({ currentPage, totalPages, setPage }: PaginationProps) => {
+const Pagination = memo(({ currentPage, totalPages, setPage }: PaginationProps) => {
   if (totalPages <= 1) return null;
 
-  const getPageNumbers = () => {
-    const pageNumbers = [];
+  // Memoize expensive page numbers calculation
+  const pageNumbers = useMemo(() => {
+    const pages = [];
 
-    pageNumbers.push(1);
+    pages.push(1);
 
     const rangeStart = Math.max(2, currentPage - 1);
     const rangeEnd = Math.min(totalPages - 1, currentPage + 1);
 
     if (rangeStart > 2) {
-      pageNumbers.push("ellipsis1");
+      pages.push("ellipsis1");
     }
 
     for (let i = rangeStart; i <= rangeEnd; i++) {
-      pageNumbers.push(i);
+      pages.push(i);
     }
 
     if (rangeEnd < totalPages - 1) {
-      pageNumbers.push("ellipsis2");
+      pages.push("ellipsis2");
     }
 
     if (totalPages > 1) {
-      pageNumbers.push(totalPages);
+      pages.push(totalPages);
     }
 
-    return pageNumbers;
-  };
+    return pages;
+  }, [currentPage, totalPages]);
 
-  const pageNumbers = getPageNumbers();
+  const handlePrevious = () => setPage(Math.max(1, currentPage - 1));
+  const handleNext = () => setPage(Math.min(totalPages, currentPage + 1));
 
   return (
     <PaginationUI className="mt-8" data-testid="pagination">
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
-            onClick={() => setPage(Math.max(1, currentPage - 1))}
+            onClick={handlePrevious}
             className={
               currentPage === 1 ? "pointer-events-none opacity-50" : ""
             }
@@ -69,7 +72,7 @@ const Pagination = ({ currentPage, totalPages, setPage }: PaginationProps) => {
           }
 
           return (
-            <PaginationItem key={pageNumber}>
+            <PaginationItem key={`page-${pageNumber}`}>
               <PaginationLink
                 onClick={() => setPage(pageNumber as number)}
                 isActive={pageNumber === currentPage}
@@ -82,7 +85,7 @@ const Pagination = ({ currentPage, totalPages, setPage }: PaginationProps) => {
 
         <PaginationItem>
           <PaginationNext
-            onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
+            onClick={handleNext}
             className={
               currentPage === totalPages ? "pointer-events-none opacity-50" : ""
             }
@@ -92,6 +95,8 @@ const Pagination = ({ currentPage, totalPages, setPage }: PaginationProps) => {
       </PaginationContent>
     </PaginationUI>
   );
-};
+});
+
+Pagination.displayName = 'Pagination';
 
 export default Pagination;

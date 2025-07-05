@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { Trash2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { O, pipe } from "@mobily/ts-belt";
@@ -56,7 +56,7 @@ const TrackList = () => {
   const selectedTrackIds = useTracksStore((state) => state.selectedTrackIds);
   const toggleAllTracksSelection = useTracksStore((state) => state.toggleAllTracksSelection);
   const clearTrackSelection = useTracksStore((state) => state.clearTrackSelection);
-  
+
 
   const getParam = (key: string) => O.fromNullable(searchParams.get(key));
 
@@ -97,7 +97,7 @@ const TrackList = () => {
 
   }, [searchParams, setFilter, setSort, setPage]);
 
-  const updateQueryParams = (params: Record<string, string>) => {
+  const updateQueryParams = useCallback((params: Record<string, string>) => {
     const newParams = new URLSearchParams(searchParams.toString());
 
     Object.entries(params).forEach(([key, value]) => {
@@ -119,16 +119,22 @@ const TrackList = () => {
     const newUrl = `${window.location.pathname}${newParamsString}`;
 
     router.push(newUrl);
-  };
+  }, [searchParams, router]);
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     clearTrackSelection();
     updateQueryParams({ page: page.toString() });
-  };
+  }, [clearTrackSelection, updateQueryParams]);
 
-  const areAllTracksSelected =
-    tracks.length > 0 && selectedTrackIds.length === tracks.length;
-  const areSomeTracksSelected = selectedTrackIds.length > 0;
+  const areAllTracksSelected = useMemo(() =>
+    tracks.length > 0 && selectedTrackIds.length === tracks.length,
+    [tracks.length, selectedTrackIds.length]
+  );
+
+  const areSomeTracksSelected = useMemo(() =>
+    selectedTrackIds.length > 0,
+    [selectedTrackIds.length]
+  );
 
   const hasActiveFilters =
     O.isSome(getParam("search")) ||

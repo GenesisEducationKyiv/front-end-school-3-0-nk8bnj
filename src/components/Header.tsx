@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo, memo } from "react";
 import { Music, Plus, Search, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { O } from "@mobily/ts-belt";
@@ -8,36 +8,32 @@ import { O } from "@mobily/ts-belt";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
 } from "@/components/ui/select";
 import useTracksStore from "@/store/useTracksStore";
 import { useGenresQuery } from "@/hooks/useTracksQueries";
 import { useDebounce } from "@/hooks/useDebounce";
 import { SortValue } from "@/types/types";
 
-const Header = () => {
+const Header = memo(() => {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 
 	const openCreateModal = useTracksStore((state) => state.openCreateModal);
 
 	const getParam = (key: string) => O.fromNullable(searchParams.get(key));
-	const initialSearch = O.getWithDefault(getParam("search"), "");
+	const initialSearch = useMemo(() => O.getWithDefault(getParam("search"), ""), []);
 
 	const [searchTerm, setSearchTerm] = useState(initialSearch);
 	const debouncedSearch = useDebounce(searchTerm, 500);
 
 	const { data: genres = [] } = useGenresQuery();
 
-	useEffect(() => {
-		updateQueryParams({ search: debouncedSearch });
-	}, [debouncedSearch]);
-
-	const updateQueryParams = (params: Record<string, string>) => {
+	const updateQueryParams = useCallback((params: Record<string, string>) => {
 		const newParams = new URLSearchParams(searchParams.toString());
 
 		Object.entries(params).forEach(([key, value]) => {
@@ -59,17 +55,21 @@ const Header = () => {
 		const newUrl = `${window.location.pathname}${newParamsString}`;
 
 		router.push(newUrl);
-	};
+	}, [searchParams, router]);
 
-	const handleSortChange = (value: SortValue) => {
+	useEffect(() => {
+		updateQueryParams({ search: debouncedSearch });
+	}, [debouncedSearch, updateQueryParams]);
+
+	const handleSortChange = useCallback((value: SortValue) => {
 		updateQueryParams({ sort: value, page: "1" });
-	};
+	}, [updateQueryParams]);
 
-	const handleGenreChange = (value: string) => {
+	const handleGenreChange = useCallback((value: string) => {
 		updateQueryParams({ genre: value, page: "1" });
-	};
+	}, [updateQueryParams]);
 
-	const clearFilters = () => {
+	const clearFilters = useCallback(() => {
 		setSearchTerm("");
 		updateQueryParams({
 			search: "",
@@ -77,7 +77,7 @@ const Header = () => {
 			sort: "title-asc",
 			page: "1",
 		});
-	};
+	}, [updateQueryParams]);
 
 	const hasActiveFilters =
 		O.isSome(getParam("search")) ||
@@ -169,6 +169,8 @@ const Header = () => {
 			</div>
 		</>
 	);
-};
+});
+
+Header.displayName = 'Header';
 
 export default Header;

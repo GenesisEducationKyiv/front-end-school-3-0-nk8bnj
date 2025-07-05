@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, UploadCloud, Play, Pause } from "lucide-react";
-import { useState, useRef, useEffect, memo } from "react";
+import { useState, useRef, useEffect, memo, useCallback } from "react";
 import useTracksStore from "@/store/useTracksStore";
 import Image from "next/image";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -37,7 +37,7 @@ const TrackCard = memo(({ track }: TrackCardProps) => {
     }
   }, [currentlyPlaying, track.id, isPlaying]);
 
-  const handlePlayPause = () => {
+  const handlePlayPause = useCallback(() => {
     if (!track.audioFile) return;
 
     if (isPlaying) {
@@ -54,7 +54,28 @@ const TrackCard = memo(({ track }: TrackCardProps) => {
       setIsPlaying(true);
       setCurrentlyPlaying(track.id);
     }
-  };
+  }, [track.audioFile, track.id, isPlaying, currentlyPlaying, setCurrentlyPlaying]);
+
+  const handleAudioEnded = useCallback(() => {
+    setIsPlaying(false);
+    setCurrentlyPlaying(null);
+  }, [setCurrentlyPlaying]);
+
+  const handleToggleSelection = useCallback(() => {
+    toggleTrackSelection(track.id);
+  }, [toggleTrackSelection, track.id]);
+
+  const handleEdit = useCallback(() => {
+    openEditModal(track);
+  }, [openEditModal, track]);
+
+  const handleDelete = useCallback(() => {
+    openDeleteModal(track);
+  }, [openDeleteModal, track]);
+
+  const handleUpload = useCallback(() => {
+    openUploadModal(track);
+  }, [openUploadModal, track]);
 
   return (
     <Card
@@ -64,7 +85,7 @@ const TrackCard = memo(({ track }: TrackCardProps) => {
       <div className="absolute top-2 left-2 z-10">
         <Checkbox
           checked={isSelected}
-          onCheckedChange={() => toggleTrackSelection(track.id)}
+          onCheckedChange={handleToggleSelection}
           className="bg-white/70 hover:bg-white/90"
           data-testid={`track-checkbox-${track.id}`}
         />
@@ -138,10 +159,7 @@ const TrackCard = memo(({ track }: TrackCardProps) => {
             className="audio-player w-full mt-4"
             controls={isPlaying}
             preload="none" // Don't preload audio until needed
-            onEnded={() => {
-              setIsPlaying(false);
-              setCurrentlyPlaying(null);
-            }}
+            onEnded={handleAudioEnded}
             data-testid={`audio-player-${track.id}`}
           />
         )}
@@ -151,7 +169,7 @@ const TrackCard = memo(({ track }: TrackCardProps) => {
         <Button
           variant="secondary"
           size="sm"
-          onClick={() => openEditModal(track)}
+          onClick={handleEdit}
           data-testid={`edit-track-${track.id}`}
         >
           <Edit className="h-4 w-4 mr-1" /> Edit
@@ -161,7 +179,7 @@ const TrackCard = memo(({ track }: TrackCardProps) => {
           <Button
             variant="secondary"
             size="icon"
-            onClick={() => openUploadModal(track)}
+            onClick={handleUpload}
             title={track.audioFile ? "Replace audio file" : "Upload audio file"}
             data-testid={`upload-track-${track.id}`}
           >
@@ -171,7 +189,7 @@ const TrackCard = memo(({ track }: TrackCardProps) => {
           <Button
             variant="secondary"
             size="icon"
-            onClick={() => openDeleteModal(track)}
+            onClick={handleDelete}
             data-testid={`delete-track-${track.id}`}
           >
             <Trash2 className="h-4 w-4" />
