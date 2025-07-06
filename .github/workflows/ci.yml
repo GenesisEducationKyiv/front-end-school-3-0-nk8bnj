@@ -29,7 +29,7 @@ jobs:
         if: always()
         with:
           name: eslint-logs
-          path: test-results/eslint-report.json
+          path: eslint-report.json
           retention-days: 7
 
   unit-tests:
@@ -71,6 +71,7 @@ jobs:
 
       - name: Save build artifacts
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: build-artifacts
           path: .next/
