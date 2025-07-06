@@ -13,7 +13,8 @@
     "test:ui": "vitest --ui",
     "test:ct": "playwright test -c playwright-ct.config.ts",
     "test:e2e": "playwright test",
-    "test:integration": "vitest run --config vitest.integration.config.ts"
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@mobily/ts-belt": "^3.13.1",
