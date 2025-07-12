@@ -18,6 +18,7 @@ A modern web application for managing music tracks, built with Next.js 15 and Re
 - TailwindCSS
 - Shadcn/ui
 - Lucide
+- Storybook
 
 ## Optimization & Build Features
 
@@ -37,6 +38,21 @@ A modern web application for managing music tracks, built with Next.js 15 and Re
 ### Source Maps
 - Source maps are generated for easier debugging of production builds. Configure in `next.config.ts` as needed.
 
+## Component Development & Documentation
+
+### Storybook
+- Integrated with Storybook for component development and documentation
+- Features:
+  - Component isolation and testing
+  - Interactive documentation with auto-generated controls
+  - Accessibility testing with `@storybook/addon-a11y`
+  - Design integration with `@storybook/addon-designs`
+  - Vitest integration for component testing
+  - Chromatic integration for visual testing
+- Stories are located in `/src/stories/` and follow the `*.stories.ts` pattern
+- Run with `npm run storybook` to start the development server on port 6006
+- Build static Storybook with `npm run build-storybook`
+
 ## Start project locally
 
 ```bash
@@ -44,6 +60,14 @@ npm start
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+### Storybook Development
+
+```bash
+npm run storybook
+```
+
+Open [http://localhost:6006](http://localhost:6006) to view the component library and documentation.
 
 ## Project Structure
 
@@ -56,7 +80,9 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - `/src/types` - TypeScript type definitions
 - `/src/lib` - Utility functions and configuration
 - `/src/test` - Test setup and utilities
+- `/src/stories` - Storybook component stories
 - `/public` - Static assets
+- `/.storybook` - Storybook configuration
 - Configuration files:
   - `next.config.ts` - Next.js configuration
   - `vitest.config.ts` - Unit test configuration
