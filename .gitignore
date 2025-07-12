@@ -48,3 +48,5 @@ playwright/videos/
 playwright/traces/
 
 test-results/
+*storybook.log
+storybook-static

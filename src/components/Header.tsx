@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo, memo } from "react";
-import { Music, Plus, Search, X } from "lucide-react";
+import { Music, Search, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { O } from "@mobily/ts-belt";
 
 import { Button } from "@/components/ui/button";
+import CreateTrackButton from "./CreateTrackButton";
 import { Input } from "@/components/ui/input";
 import {
 	Select,
@@ -94,11 +95,7 @@ const Header = memo(() => {
 					<Music className="mr-2 h-8 w-8" /> Track Manager
 				</h1>
 
-				<div className="flex items-center gap-2">
-					<Button onClick={openCreateModal} data-testid="create-track-button">
-						<Plus className="mr-2 h-4 w-4" /> Create Track
-					</Button>
-				</div>
+				<CreateTrackButton onClick={openCreateModal} />
 			</div>
 
 			<div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-4">
