@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, UploadCloud, Play, Pause } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo, useCallback } from "react";
 import useTracksStore from "@/store/useTracksStore";
 import Image from "next/image";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,16 +17,14 @@ interface TrackCardProps {
   track: Track;
 }
 
-const TrackCard = ({ track }: TrackCardProps) => {
-  const {
-    openEditModal,
-    openDeleteModal,
-    openUploadModal,
-    currentlyPlaying,
-    setCurrentlyPlaying,
-    toggleTrackSelection,
-    selectedTrackIds,
-  } = useTracksStore();
+const TrackCard = memo(({ track }: TrackCardProps) => {
+  const openEditModal = useTracksStore((state) => state.openEditModal);
+  const openDeleteModal = useTracksStore((state) => state.openDeleteModal);
+  const openUploadModal = useTracksStore((state) => state.openUploadModal);
+  const currentlyPlaying = useTracksStore((state) => state.currentlyPlaying);
+  const setCurrentlyPlaying = useTracksStore((state) => state.setCurrentlyPlaying);
+  const toggleTrackSelection = useTracksStore((state) => state.toggleTrackSelection);
+  const selectedTrackIds = useTracksStore((state) => state.selectedTrackIds);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -39,7 +37,7 @@ const TrackCard = ({ track }: TrackCardProps) => {
     }
   }, [currentlyPlaying, track.id, isPlaying]);
 
-  const handlePlayPause = () => {
+  const handlePlayPause = useCallback(() => {
     if (!track.audioFile) return;
 
     if (isPlaying) {
@@ -56,7 +54,28 @@ const TrackCard = ({ track }: TrackCardProps) => {
       setIsPlaying(true);
       setCurrentlyPlaying(track.id);
     }
-  };
+  }, [track.audioFile, track.id, isPlaying, currentlyPlaying, setCurrentlyPlaying]);
+
+  const handleAudioEnded = useCallback(() => {
+    setIsPlaying(false);
+    setCurrentlyPlaying(null);
+  }, [setCurrentlyPlaying]);
+
+  const handleToggleSelection = useCallback(() => {
+    toggleTrackSelection(track.id);
+  }, [toggleTrackSelection, track.id]);
+
+  const handleEdit = useCallback(() => {
+    openEditModal(track);
+  }, [openEditModal, track]);
+
+  const handleDelete = useCallback(() => {
+    openDeleteModal(track);
+  }, [openDeleteModal, track]);
+
+  const handleUpload = useCallback(() => {
+    openUploadModal(track);
+  }, [openUploadModal, track]);
 
   return (
     <Card
@@ -66,7 +85,7 @@ const TrackCard = ({ track }: TrackCardProps) => {
       <div className="absolute top-2 left-2 z-10">
         <Checkbox
           checked={isSelected}
-          onCheckedChange={() => toggleTrackSelection(track.id)}
+          onCheckedChange={handleToggleSelection}
           className="bg-white/70 hover:bg-white/90"
           data-testid={`track-checkbox-${track.id}`}
         />
@@ -79,7 +98,8 @@ const TrackCard = ({ track }: TrackCardProps) => {
             alt={track.title}
             className="w-full h-full object-cover"
             width={300}
-            height={150}
+            height={300}
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full bg-gray-200 flex items-center justify-center">
@@ -138,10 +158,8 @@ const TrackCard = ({ track }: TrackCardProps) => {
             src={`http://localhost:8000/api/files/${track.audioFile}`}
             className="audio-player w-full mt-4"
             controls={isPlaying}
-            onEnded={() => {
-              setIsPlaying(false);
-              setCurrentlyPlaying(null);
-            }}
+            preload="none" // Don't preload audio until needed
+            onEnded={handleAudioEnded}
             data-testid={`audio-player-${track.id}`}
           />
         )}
@@ -151,7 +169,7 @@ const TrackCard = ({ track }: TrackCardProps) => {
         <Button
           variant="secondary"
           size="sm"
-          onClick={() => openEditModal(track)}
+          onClick={handleEdit}
           data-testid={`edit-track-${track.id}`}
         >
           <Edit className="h-4 w-4 mr-1" /> Edit
@@ -161,7 +179,7 @@ const TrackCard = ({ track }: TrackCardProps) => {
           <Button
             variant="secondary"
             size="icon"
-            onClick={() => openUploadModal(track)}
+            onClick={handleUpload}
             title={track.audioFile ? "Replace audio file" : "Upload audio file"}
             data-testid={`upload-track-${track.id}`}
           >
@@ -171,7 +189,7 @@ const TrackCard = ({ track }: TrackCardProps) => {
           <Button
             variant="secondary"
             size="icon"
-            onClick={() => openDeleteModal(track)}
+            onClick={handleDelete}
             data-testid={`delete-track-${track.id}`}
           >
             <Trash2 className="h-4 w-4" />
@@ -180,6 +198,8 @@ const TrackCard = ({ track }: TrackCardProps) => {
       </CardFooter>
     </Card>
   );
-};
+});
+
+TrackCard.displayName = 'TrackCard';
 
 export default TrackCard;
